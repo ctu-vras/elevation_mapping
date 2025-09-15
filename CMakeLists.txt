@@ -318,6 +318,12 @@ if(BUILD_TESTING)
 #   endif()
 endif()
 
+install(PROGRAMS
+    scripts/clear_map_relay.py
+    DESTINATION lib/${PROJECT_NAME}
+)
+
+
 ###########
 ## Clang ##
 ###########

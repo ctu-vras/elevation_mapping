@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- SPDX-License-Identifier: BSD-3-Clause -->
+<!-- SPDX-FileCopyrightText: Czech Technical University in Prague -->
+
+<launch>
+    <node pkg="elevation_mapping" exec="gridmap_to_pointcloud_node" name="gridmap_to_pointcloud_node" output="screen" respawn="true" respawn_delay="5">
+        <remap from="elevation_map" to="traversability_cost" />
+        <remap from="elevation_map/points" to="geometric_traversability" />
+        <param name="elevation_layer" value="traversability" />
+    </node>
+</launch>
