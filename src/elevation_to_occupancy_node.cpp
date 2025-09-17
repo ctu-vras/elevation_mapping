@@ -11,10 +11,10 @@ public:
   : Node("elevation_to_occupancy_node")
   {
     // Declare and get parameters
-    min_height_ = this->declare_parameter("min_height", 0.5);
-    max_height_ = this->declare_parameter("max_height", 2.0);
+    min_height_ = this->declare_parameter("min_height", 0.0);
+    max_height_ = this->declare_parameter("max_height", 1.0);
     occupancy_layer_ = this->declare_parameter("elevation_layer", std::string("elevation"));
-    elevation_topic_ = this->declare_parameter("elevation_topic", std::string("elevation_map"));
+    elevation_topic_ = this->declare_parameter("elevation_topic", std::string("/elevation_mapping_node/elevation_map_filter"));
 
     // Subscriber to elevation map
     subscription_ = this->create_subscription<grid_map_msgs::msg::GridMap>(
@@ -48,7 +48,7 @@ private:
     }
 
     for (size_t i=0; i < occupancy_grid.data.size(); ++i) {
-      if (occupancy_grid.data[i] > 0) {
+      if (occupancy_grid.data[i] > 50) {
         occupancy_grid.data[i] = 100;
       }
     }
