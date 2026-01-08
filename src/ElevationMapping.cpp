@@ -104,6 +104,11 @@ void ElevationMapping::setupSubscribers() {  // Handle deprecated point_cloud_to
   }
   
   if (!robotPoseTopic_.empty()) {
+#if MESSAGE_FILTERS_VERSION_SUBSCRIBER_BASE_IS_TEMPLATE
+    const rclcpp::QoS qos(rclcpp::QoSInitialization::from_rmw(qos_profile));
+#else
+    const auto& qos = qos_profile;
+#endif
     robotPoseSubscriber_.subscribe(nodeHandle_, robotPoseTopic_,qos_profile);
     robotPoseCache_.connectInput(robotPoseSubscriber_);
     robotPoseCache_.setCacheSize(robotPoseCacheSize_);
@@ -114,11 +119,18 @@ void ElevationMapping::setupSubscribers() {  // Handle deprecated point_cloud_to
 
 void ElevationMapping::setupServices() {
   // Multi-threading for fusion.  
-  fusionTriggerService_ = nodeHandle_->create_service<std_srvs::srv::Empty>("trigger_fusion", std::bind(&ElevationMapping::fuseEntireMapServiceCallback, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3), rclcpp::ServicesQoS().get_rmw_qos_profile(), fusionServiceGroup_);
-  
-  fusedSubmapService_ = nodeHandle_->create_service<grid_map_msgs::srv::GetGridMap>("get_submap", std::bind(&ElevationMapping::getFusedSubmapServiceCallback, this, std::placeholders::_1, std::placeholders::_2), rclcpp::ServicesQoS().get_rmw_qos_profile(), fusionServiceGroup_);
 
-  rawSubmapService_ = nodeHandle_->create_service<grid_map_msgs::srv::GetGridMap>("get_raw_submap", std::bind(&ElevationMapping::getRawSubmapServiceCallback, this, std::placeholders::_1, std::placeholders::_2), rclcpp::ServicesQoS().get_rmw_qos_profile(), fusionServiceGroup_);
+#if MESSAGE_FILTERS_VERSION_SUBSCRIBER_BASE_IS_TEMPLATE
+  const auto servicesQoS = rclcpp::ServicesQoS();
+#else
+  const auto servicesQoS = rclcpp::ServicesQoS().get_rmw_qos_profile();
+#endif
+
+  fusionTriggerService_ = nodeHandle_->create_service<std_srvs::srv::Empty>("trigger_fusion", std::bind(&ElevationMapping::fuseEntireMapServiceCallback, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3), servicesQoS, fusionServiceGroup_);
+  
+  fusedSubmapService_ = nodeHandle_->create_service<grid_map_msgs::srv::GetGridMap>("get_submap", std::bind(&ElevationMapping::getFusedSubmapServiceCallback, this, std::placeholders::_1, std::placeholders::_2), servicesQoS, fusionServiceGroup_);
+
+  rawSubmapService_ = nodeHandle_->create_service<grid_map_msgs::srv::GetGridMap>("get_raw_submap", std::bind(&ElevationMapping::getRawSubmapServiceCallback, this, std::placeholders::_1, std::placeholders::_2), servicesQoS, fusionServiceGroup_);
 
   clearMapService_ = nodeHandle_->create_service<std_srvs::srv::Empty>("clear_map", std::bind(&ElevationMapping::clearMapServiceCallback, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
   enableUpdatesService_ = nodeHandle_->create_service<std_srvs::srv::Empty>("enable_updates", std::bind(&ElevationMapping::enableUpdatesServiceCallback, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));

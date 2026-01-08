@@ -38,6 +38,11 @@ find_package(Eigen3 REQUIRED)
 find_package(PCL REQUIRED)
 find_package(Threads REQUIRED)
 
+set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
+try_compile(SUBSCRIBER_BASE_IS_TEMPLATE
+  ${CMAKE_BINARY_DIR}/is_template ${CMAKE_CURRENT_SOURCE_DIR}/cmake/message_filters_subscriber_base_is_template.cpp
+  CXX_STANDARD 20 LINK_LIBRARIES message_filters::message_filters)
+
 set(DEPENDENCIES
   grid_map_core
   grid_map_ros
@@ -121,6 +126,10 @@ target_link_libraries(${PROJECT_NAME}_library
   ${Boost_LIBRARIES}
   pthread  
 )
+
+if(SUBSCRIBER_BASE_IS_TEMPLATE)
+  target_compile_definitions(${PROJECT_NAME}_library PRIVATE MESSAGE_FILTERS_VERSION_SUBSCRIBER_BASE_IS_TEMPLATE=1)
+endif()
 
 ##############
 # Executable #
